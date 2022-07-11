@@ -1,3 +1,4 @@
+#! coding=utf-8
 from pynput import keyboard
 from bs4 import BeautifulSoup
 from browser import Browser
@@ -20,16 +21,28 @@ class Zhihu(Browser):
     def show_hot(self):
         response = self.get_response("https://www.zhihu.com")
         bs = BeautifulSoup(response.text, "html.parser")
-        for content in bs.findAll(name="div", class_="HotItem-content"):
+        contents = bs.findAll(name="div", class_="HotItem-content")
+        i = 0
+        while i < len(contents):
+            content = contents[i]
             # print("title:", content.a.h2.text)
-            print("question:")
+            print(f"question: {i}/{len(contents)}")
             self._display(content.get_text())
+            print("1: 查看回答; "
+                  "p: 上一条; "
+                  "q: 退出; "
+                  "其他: 下一条")
             command = self._get_command()
             print("command:", command)
-            if command == "1":
-                self._show_answer(content.a["href"])
+            if command == "p":
+                if i > 0:
+                    i -= 1
+                continue
             if command == "q":
                 return
+            if command == "1":
+                self._show_answer(content.a["href"])
+            i += 1
 
     def _show_answer(self, href):
         response = self.get_response(href)
